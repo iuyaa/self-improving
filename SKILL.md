@@ -9,6 +9,7 @@ A safe self-improvement skill for Claude Code and Codex. It combines:
 
 - peterskoett-style low-risk `.learnings/` markdown logs
 - zhaono1-style structured pattern memory with confidence and application counts
+- auto-skill-style optional keyword indexes for promoted knowledge and skill-specific experience
 - opt-in hooks that remind and detect, but do not silently mutate code or skills
 
 ## Attribution
@@ -17,6 +18,7 @@ This skill is an independent Claude Code/Codex adaptation inspired by:
 
 - https://github.com/zhaono1/agent-playbook/tree/main/skills/self-improving-agent for structured multi-memory, semantic patterns, confidence tracking, and pattern promotion ideas.
 - https://github.com/peterskoett/self-improving-agent for the `.learnings/` logging workflow, safe hook reminder model, markdown entry formats, and skill extraction flow.
+- https://github.com/Toolsai/auto-skill for the optional keyword-indexed `knowledge-base/` and cross-skill `experience/` memory layer ideas.
 
 ## Operating Principle
 
@@ -50,6 +52,14 @@ It creates, without overwriting existing files:
 ├── FEATURE_REQUESTS.md
 └── memory/
     └── semantic-patterns.json
+knowledge-base/
+├── _index.json
+├── workflow.md
+├── coding.md
+└── writing.md
+experience/
+├── _index.json
+└── skill-self-improving-agent.md
 ```
 
 ## Logging Rules
@@ -238,6 +248,67 @@ Promotion targets:
 
 Before promoting, distill the entry into a concise rule. Do not paste the incident log verbatim.
 
+## Optional Knowledge and Experience Layers
+
+Use these layers only after raw entries have been distilled. They are not mandatory per-turn reads.
+
+| Layer | Path | Purpose |
+|---|---|---|
+| Raw event log | `.learnings/*.md` | Corrections, failures, requests, and one-off observations |
+| Pattern index | `.learnings/memory/semantic-patterns.json` | Machine-readable recurring patterns with confidence/applications |
+| General knowledge | `knowledge-base/` | Promoted reusable rules organized by topic keywords |
+| Skill experience | `experience/` | Skill-specific gotchas, parameters, successful procedures, and caveats |
+
+### Reading Policy
+
+- Read `knowledge-base/_index.json` only when the current task clearly matches a topic, the user asks for memory, or you are promoting/reviewing knowledge.
+- Read `experience/_index.json` only when using or improving a specific skill and skill-specific history could affect the result.
+- Do not force these reads every turn.
+- If a task succeeds and the user is satisfied, ask before promoting the distilled lesson into `knowledge-base/` or `experience/`.
+
+### Knowledge Entry Format
+
+Use `templates/knowledge-entry.md`:
+
+```markdown
+## [Short title]
+
+**Date**: YYYY-MM-DD
+**Context**: When this rule applies.
+**Best Practice**:
+- Step or rule 1
+- Step or rule 2
+
+**Why it matters**: What time, risk, or confusion this prevents.
+**Source Learning**: LRN-YYYYMMDD-XXX
+**Keywords**: keyword1, keyword2, keyword3
+
+---
+```
+
+### Experience Entry Format
+
+Use `templates/experience-entry.md`:
+
+```markdown
+## [Problem or technique title]
+
+**Date**: YYYY-MM-DD
+**Skill**: skill-id
+**Context**: When this skill-specific experience applies.
+**Solution**:
+- Concrete step 1
+- Concrete step 2
+
+**Key Files/Paths**:
+- path/to/file
+
+**Source Learning**: LRN-YYYYMMDD-XXX
+**Keywords**: keyword1, keyword2, keyword3
+
+---
+```
+
 ## Hooks
 
 Hooks are optional and intentionally low authority.
@@ -270,11 +341,11 @@ Enable `PostToolUse` only if you are comfortable with the hook inspecting tool o
 
 ## Workflow
 
-1. Initialize `.learnings/` if missing.
+1. Initialize `.learnings/`, `knowledge-base/`, and `experience/` if missing.
 2. Work normally.
-3. When a trigger occurs, log a compact entry.
+3. When a trigger occurs, log a compact raw entry to `.learnings/`.
 4. If repeated or broadly applicable, update semantic pattern memory.
-5. If verified and valuable, promote to project/user instructions or extract a skill.
+5. If verified and valuable, ask before promoting distilled content to project/user instructions, `knowledge-base/`, `experience/`, or a new skill.
 6. Mark the original entry `resolved`, `promoted`, `wont_fix`, or `promoted_to_skill`.
 
 ## Skill Extraction
@@ -290,8 +361,9 @@ Then edit `skills/my-new-skill/SKILL.md`, update the source learning status to `
 
 ## Safety Boundaries
 
-- Do not let hooks automatically edit `SKILL.md`, `CLAUDE.md`, `AGENTS.md`, or memory files.
+- Do not let hooks automatically edit `SKILL.md`, `CLAUDE.md`, `AGENTS.md`, knowledge indexes, experience files, or memory files.
 - Do not auto-create PRs from learnings.
 - Do not persist raw tool input/output by default.
+- Do not auto-append global rules or force this skill into every task.
 - Ask before modifying shared/global settings.
 - Treat `.learnings/` as local by default unless the team explicitly wants it committed.
