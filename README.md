@@ -7,19 +7,32 @@ A Claude Code/Codex skill for safe continuous improvement.
 This project is an independent Claude Code/Codex adaptation that combines ideas from:
 
 - https://github.com/zhaono1/agent-playbook/tree/main/skills/self-improving-agent — structured multi-memory design, semantic pattern memory, confidence/application tracking.
-- https://github.com/peterskoett/self-improving-agent — low-risk `.learnings/` workflow, hook reminders, markdown log formats, skill extraction scaffold.
-- https://github.com/Toolsai/auto-skill — optional keyword-indexed `knowledge-base/` and cross-skill `experience/` memory layer ideas.
+- https://github.com/peterskoett/self-improving-agent — low-risk learning logs, hook reminders, markdown log formats, skill extraction scaffold.
+- https://github.com/Toolsai/auto-skill — optional keyword-indexed knowledge base and cross-skill experience memory layer ideas.
 
-The implementation here is rewritten for this repository with conservative safety defaults: hooks remind rather than auto-mutate durable files.
+The implementation here is rewritten with conservative safety defaults: raw local capture may be automatic, but promotion to durable guidance requires consent.
 
-It combines markdown learning logs with optional structured memory layers:
+## Storage Layout
 
-- `.learnings/LEARNINGS.md` for raw corrections, insights, and best practices
-- `.learnings/ERRORS.md` for raw command/tool failures
-- `.learnings/FEATURE_REQUESTS.md` for requested capabilities
-- `.learnings/memory/semantic-patterns.json` for machine-readable recurring patterns, confidence, and application counts
-- `knowledge-base/` for promoted reusable rules organized by topic
-- `experience/` for skill-specific gotchas, parameters, and successful procedures
+All self-improvement data lives under one root:
+
+```text
+.self-improving/
+├── logs/
+│   ├── LEARNINGS.md
+│   ├── ERRORS.md
+│   └── FEATURE_REQUESTS.md
+├── memory/
+│   └── semantic-patterns.json
+├── knowledge-base/
+│   ├── _index.json
+│   ├── workflow.md
+│   ├── coding.md
+│   └── writing.md
+└── experience/
+    ├── _index.json
+    └── skill-self-improving-agent.md
+```
 
 ## Quick Start
 
@@ -33,14 +46,20 @@ Windows/PowerShell:
 pwsh -File scripts/init-learnings.ps1 -Root .
 ```
 
-This initializes `.learnings/`, `knowledge-base/`, and `experience/` without overwriting existing files.
+This initializes `.self-improving/` without overwriting existing files.
 
 Optional Claude Code/Codex hook config examples live in `settings/`.
 
+## Consent Model
+
+- Raw capture is automatic: failures, user corrections, non-obvious fixes, and feature requests can be recorded to `.self-improving/logs/` without asking each time.
+- Local pattern indexing is automatic: distilled summaries can update `.self-improving/memory/semantic-patterns.json` without storing raw sensitive output.
+- Promotion is consent-based: ask before writing to `.self-improving/knowledge-base/`, `.self-improving/experience/`, `CLAUDE.md`, `AGENTS.md`, Copilot instructions, new skills, commits, or remote pushes.
+
 ## Design
 
-- Hooks remind; they do not silently mutate durable files.
-- Logs are short, redacted, and local by default.
-- `.learnings/` is the raw event log; `knowledge-base/` and `experience/` are optional promoted memory.
+- Hooks remind; they do not silently mutate durable guidance files.
+- `.self-improving/logs/` and `.self-improving/memory/` stay local by default; promoted `.self-improving/knowledge-base/` and `.self-improving/experience/` entries can be shared after consent.
+- `.self-improving/logs/` is the raw event log.
+- `.self-improving/knowledge-base/` and `.self-improving/experience/` are promoted memory.
 - Knowledge and experience indexes are read only when relevant, not on every turn.
-- Repeated learnings can be promoted to `CLAUDE.md`, `AGENTS.md`, Copilot instructions, `knowledge-base/`, `experience/`, or a new skill.

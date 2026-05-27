@@ -2,16 +2,17 @@ param(
   [string]$Root = "."
 )
 
-$learningsDir = Join-Path $Root ".learnings"
-$memoryDir = Join-Path $learningsDir "memory"
-$knowledgeDir = Join-Path $Root "knowledge-base"
-$experienceDir = Join-Path $Root "experience"
+$baseDir = Join-Path $Root ".self-improving"
+$logsDir = Join-Path $baseDir "logs"
+$memoryDir = Join-Path $baseDir "memory"
+$knowledgeDir = Join-Path $baseDir "knowledge-base"
+$experienceDir = Join-Path $baseDir "experience"
 
-New-Item -ItemType Directory -Force -Path $memoryDir, $knowledgeDir, $experienceDir | Out-Null
+New-Item -ItemType Directory -Force -Path $logsDir, $memoryDir, $knowledgeDir, $experienceDir | Out-Null
 
-$learningsPath = Join-Path $learningsDir "LEARNINGS.md"
-$errorsPath = Join-Path $learningsDir "ERRORS.md"
-$featuresPath = Join-Path $learningsDir "FEATURE_REQUESTS.md"
+$learningsPath = Join-Path $logsDir "LEARNINGS.md"
+$errorsPath = Join-Path $logsDir "ERRORS.md"
+$featuresPath = Join-Path $logsDir "FEATURE_REQUESTS.md"
 $patternsPath = Join-Path $memoryDir "semantic-patterns.json"
 $knowledgeIndexPath = Join-Path $knowledgeDir "_index.json"
 $experienceIndexPath = Join-Path $experienceDir "_index.json"
@@ -20,7 +21,7 @@ if (-not (Test-Path $learningsPath)) {
 @'
 # Learnings
 
-Corrections, insights, knowledge gaps, and best practices captured during development.
+Raw corrections, insights, knowledge gaps, and best practices captured during development.
 
 **Categories**: correction | insight | knowledge_gap | best_practice
 
@@ -32,7 +33,7 @@ if (-not (Test-Path $errorsPath)) {
 @'
 # Errors
 
-Command, tool, and integration failures. Keep entries short and redact sensitive output.
+Raw command, tool, and integration failures. Keep entries short and redact sensitive output.
 
 ---
 '@ | Set-Content -Path $errorsPath -Encoding UTF8
@@ -42,7 +43,7 @@ if (-not (Test-Path $featuresPath)) {
 @'
 # Feature Requests
 
-Capabilities requested by the user or discovered as workflow gaps.
+Raw capabilities requested by the user or discovered as workflow gaps.
 
 ---
 '@ | Set-Content -Path $featuresPath -Encoding UTF8
@@ -97,11 +98,10 @@ $categories = @("workflow", "coding", "writing")
 foreach ($category in $categories) {
   $file = Join-Path $knowledgeDir "$category.md"
   if (-not (Test-Path $file)) {
-    $title = (Get-Culture).TextInfo.ToTitleCase($category)
 @"
-# $title Knowledge
+# $category Knowledge
 
-Reusable knowledge promoted from .learnings/.
+Reusable knowledge promoted from .self-improving/logs/.
 
 ---
 
@@ -120,4 +120,4 @@ if (-not (Test-Path $experienceIndexPath)) {
 '@ | Set-Content -Path $experienceIndexPath -Encoding UTF8
 }
 
-Write-Output "Initialized self-improvement files in $learningsDir, $knowledgeDir, and $experienceDir"
+Write-Output "Initialized self-improvement files in $baseDir"

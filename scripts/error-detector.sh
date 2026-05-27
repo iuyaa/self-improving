@@ -46,7 +46,7 @@ done
 if [[ "$contains_error" == true ]]; then
   cat <<'EOF'
 <self-improvement-error-reminder>
-A failure-like tool output was detected. If it was unexpected, non-obvious, or reusable, append a short redacted ERR entry to .learnings/ERRORS.md. Do not persist raw output that may contain secrets.
+A failure-like tool output was detected. If it was unexpected, non-obvious, or reusable, append a short redacted ERR entry to .self-improving/logs/ERRORS.md. Do not persist raw output that may contain secrets.
 </self-improvement-error-reminder>
 EOF
 fi

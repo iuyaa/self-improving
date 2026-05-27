@@ -2,18 +2,19 @@
 set -euo pipefail
 
 root="${1:-.}"
-learnings_dir="$root/.learnings"
-memory_dir="$learnings_dir/memory"
-knowledge_dir="$root/knowledge-base"
-experience_dir="$root/experience"
+base_dir="$root/.self-improving"
+logs_dir="$base_dir/logs"
+memory_dir="$base_dir/memory"
+knowledge_dir="$base_dir/knowledge-base"
+experience_dir="$base_dir/experience"
 
-mkdir -p "$memory_dir" "$knowledge_dir" "$experience_dir"
+mkdir -p "$logs_dir" "$memory_dir" "$knowledge_dir" "$experience_dir"
 
-if [[ ! -f "$learnings_dir/LEARNINGS.md" ]]; then
-  cat > "$learnings_dir/LEARNINGS.md" <<'EOF'
+if [[ ! -f "$logs_dir/LEARNINGS.md" ]]; then
+  cat > "$logs_dir/LEARNINGS.md" <<'EOF'
 # Learnings
 
-Corrections, insights, knowledge gaps, and best practices captured during development.
+Raw corrections, insights, knowledge gaps, and best practices captured during development.
 
 **Categories**: correction | insight | knowledge_gap | best_practice
 
@@ -21,21 +22,21 @@ Corrections, insights, knowledge gaps, and best practices captured during develo
 EOF
 fi
 
-if [[ ! -f "$learnings_dir/ERRORS.md" ]]; then
-  cat > "$learnings_dir/ERRORS.md" <<'EOF'
+if [[ ! -f "$logs_dir/ERRORS.md" ]]; then
+  cat > "$logs_dir/ERRORS.md" <<'EOF'
 # Errors
 
-Command, tool, and integration failures. Keep entries short and redact sensitive output.
+Raw command, tool, and integration failures. Keep entries short and redact sensitive output.
 
 ---
 EOF
 fi
 
-if [[ ! -f "$learnings_dir/FEATURE_REQUESTS.md" ]]; then
-  cat > "$learnings_dir/FEATURE_REQUESTS.md" <<'EOF'
+if [[ ! -f "$logs_dir/FEATURE_REQUESTS.md" ]]; then
+  cat > "$logs_dir/FEATURE_REQUESTS.md" <<'EOF'
 # Feature Requests
 
-Capabilities requested by the user or discovered as workflow gaps.
+Raw capabilities requested by the user or discovered as workflow gaps.
 
 ---
 EOF
@@ -89,11 +90,10 @@ fi
 for category in workflow coding writing; do
   file="$knowledge_dir/$category.md"
   if [[ ! -f "$file" ]]; then
-    title="$category"
     cat > "$file" <<EOF
-# $title Knowledge
+# $category Knowledge
 
-Reusable knowledge promoted from .learnings/.
+Reusable knowledge promoted from .self-improving/logs/.
 
 ---
 
@@ -112,4 +112,4 @@ if [[ ! -f "$experience_dir/_index.json" ]]; then
 EOF
 fi
 
-printf 'Initialized self-improvement files in %s, %s, and %s\n' "$learnings_dir" "$knowledge_dir" "$experience_dir"
+printf 'Initialized self-improvement files in %s\n' "$base_dir"

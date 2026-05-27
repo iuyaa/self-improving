@@ -102,7 +102,7 @@ TODO: Add a compact example.
 ## Source Learning
 
 - Learning ID: TODO
-- Original File: .learnings/LEARNINGS.md
+- Original File: .self-improving/logs/LEARNINGS.md
 - Extraction Date: TODO
 EOF
 }
