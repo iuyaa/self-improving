@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./scripts/activator.sh"
+            "command": "bash \"<path-to-skill>/scripts/activator.sh\""
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./scripts/error-detector.sh"
+            "command": "bash \"<path-to-skill>/scripts/error-detector.sh\""
           }
         ]
       }

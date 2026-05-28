@@ -1,23 +1,35 @@
 param(
+  [ValidateSet("Global", "Project", "Both")]
+  [string]$Scope = "Global",
   [string]$Root = "."
 )
 
-$baseDir = Join-Path $Root ".self-improving"
-$logsDir = Join-Path $baseDir "logs"
-$memoryDir = Join-Path $baseDir "memory"
-$knowledgeDir = Join-Path $baseDir "knowledge-base"
-$experienceDir = Join-Path $baseDir "experience"
+$scriptDir = Split-Path -Parent $PSCommandPath
+$skillDir = Split-Path -Parent $scriptDir
+$globalBaseDir = Join-Path $skillDir "data"
+$projectBaseDir = Join-Path $Root ".self-improving"
 
-New-Item -ItemType Directory -Force -Path $logsDir, $memoryDir, $knowledgeDir, $experienceDir | Out-Null
+function Initialize-SelfImprovingBase {
+  param(
+    [string]$BaseDir
+  )
 
-$learningsPath = Join-Path $logsDir "LEARNINGS.md"
-$errorsPath = Join-Path $logsDir "ERRORS.md"
-$featuresPath = Join-Path $logsDir "FEATURE_REQUESTS.md"
-$patternsPath = Join-Path $memoryDir "semantic-patterns.json"
-$knowledgeIndexPath = Join-Path $knowledgeDir "_index.json"
-$experienceIndexPath = Join-Path $experienceDir "_index.json"
+  $logsDir = Join-Path $BaseDir "logs"
+  $memoryDir = Join-Path $BaseDir "memory"
+  $knowledgeDir = Join-Path $BaseDir "knowledge-base"
+  $experienceDir = Join-Path $BaseDir "experience"
 
-if (-not (Test-Path $learningsPath)) {
+  New-Item -ItemType Directory -Force -Path $logsDir, $memoryDir, $knowledgeDir, $experienceDir | Out-Null
+
+  $learningsPath = Join-Path $logsDir "LEARNINGS.md"
+  $errorsPath = Join-Path $logsDir "ERRORS.md"
+  $featuresPath = Join-Path $logsDir "FEATURE_REQUESTS.md"
+  $patternsPath = Join-Path $memoryDir "semantic-patterns.json"
+  $knowledgeIndexPath = Join-Path $knowledgeDir "_index.json"
+  $experienceIndexPath = Join-Path $experienceDir "_index.json"
+  $skillExperiencePath = Join-Path $experienceDir "skill-self-improving.md"
+
+  if (-not (Test-Path $learningsPath)) {
 @'
 # Learnings
 
@@ -27,9 +39,9 @@ Raw corrections, insights, knowledge gaps, and best practices captured during de
 
 ---
 '@ | Set-Content -Path $learningsPath -Encoding UTF8
-}
+  }
 
-if (-not (Test-Path $errorsPath)) {
+  if (-not (Test-Path $errorsPath)) {
 @'
 # Errors
 
@@ -37,9 +49,9 @@ Raw command, tool, and integration failures. Keep entries short and redact sensi
 
 ---
 '@ | Set-Content -Path $errorsPath -Encoding UTF8
-}
+  }
 
-if (-not (Test-Path $featuresPath)) {
+  if (-not (Test-Path $featuresPath)) {
 @'
 # Feature Requests
 
@@ -47,9 +59,9 @@ Raw capabilities requested by the user or discovered as workflow gaps.
 
 ---
 '@ | Set-Content -Path $featuresPath -Encoding UTF8
-}
+  }
 
-if (-not (Test-Path $patternsPath)) {
+  if (-not (Test-Path $patternsPath)) {
 @'
 {
   "patterns": {},
@@ -59,9 +71,9 @@ if (-not (Test-Path $patternsPath)) {
   }
 }
 '@ | Set-Content -Path $patternsPath -Encoding UTF8
-}
+  }
 
-if (-not (Test-Path $knowledgeIndexPath)) {
+  if (-not (Test-Path $knowledgeIndexPath)) {
 @'
 {
   "lastUpdated": null,
@@ -92,32 +104,61 @@ if (-not (Test-Path $knowledgeIndexPath)) {
   ]
 }
 '@ | Set-Content -Path $knowledgeIndexPath -Encoding UTF8
-}
+  }
 
-$categories = @("workflow", "coding", "writing")
-foreach ($category in $categories) {
-  $file = Join-Path $knowledgeDir "$category.md"
-  if (-not (Test-Path $file)) {
+  $categories = @("workflow", "coding", "writing")
+  foreach ($category in $categories) {
+    $file = Join-Path $knowledgeDir "$category.md"
+    if (-not (Test-Path $file)) {
 @"
 # $category Knowledge
 
-Reusable knowledge promoted from .self-improving/logs/.
+Reusable knowledge promoted from logs/.
 
 ---
 
 <!-- Promoted knowledge goes here. -->
 "@ | Set-Content -Path $file -Encoding UTF8
+    }
   }
-}
 
-if (-not (Test-Path $experienceIndexPath)) {
+  if (-not (Test-Path $experienceIndexPath)) {
 @'
 {
   "lastUpdated": null,
   "version": "1.0.0",
-  "skills": []
+  "skills": [
+    {
+      "id": "self-improving",
+      "name": "Self-Improving",
+      "file": "skill-self-improving.md",
+      "keywords": ["self-improving", "learning", "memory", "promotion"],
+      "count": 0
+    }
+  ]
 }
 '@ | Set-Content -Path $experienceIndexPath -Encoding UTF8
+  }
+
+  if (-not (Test-Path $skillExperiencePath)) {
+@'
+# Self-Improving Experience
+
+Skill-specific lessons for using or maintaining this skill.
+
+---
+
+<!-- Skill-specific experience goes here. -->
+'@ | Set-Content -Path $skillExperiencePath -Encoding UTF8
+  }
+
+  Write-Output "Initialized self-improvement files in $BaseDir"
 }
 
-Write-Output "Initialized self-improvement files in $baseDir"
+if ($Scope -eq "Global" -or $Scope -eq "Both") {
+  Initialize-SelfImprovingBase -BaseDir $globalBaseDir
+}
+
+if ($Scope -eq "Project" -or $Scope -eq "Both") {
+  Initialize-SelfImprovingBase -BaseDir $projectBaseDir
+}

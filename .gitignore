@@ -1,3 +1,4 @@
-.self-improving/logs/
-.self-improving/memory/
+data/logs/
+data/memory/
+.self-improving/
 .code-review-graph/

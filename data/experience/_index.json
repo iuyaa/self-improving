@@ -1,0 +1,13 @@
+{
+  "lastUpdated": null,
+  "version": "1.0.0",
+  "skills": [
+    {
+      "id": "self-improving",
+      "name": "Self-Improving",
+      "file": "skill-self-improving.md",
+      "keywords": ["self-improving", "learning", "memory", "promotion"],
+      "count": 0
+    }
+  ]
+}

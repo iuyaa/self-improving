@@ -1,9 +1,9 @@
 ---
-name: self-improving-agent
+name: self-improving
 description: "Capture errors, corrections, reusable patterns, and feature requests for Claude Code/Codex. Use after command failures, user corrections, non-obvious fixes, recurring workflow friction, or when promoting learnings into reusable skills."
 ---
 
-# Self-Improving Agent
+# Self-Improving
 
 A safe self-improvement skill for Claude Code and Codex. It combines:
 
@@ -28,59 +28,66 @@ Record short, redacted raw facts when useful. Ask before turning those facts int
 
 ## Storage Layout
 
-All self-improvement data lives under one root:
+By default, self-improvement data lives under this skill's directory. The initializer infers the skill root from its own path: the `scripts/` parent directory is the skill root.
 
 ```text
-.self-improving/
-├── logs/
-│   ├── LEARNINGS.md
-│   ├── ERRORS.md
-│   └── FEATURE_REQUESTS.md
-├── memory/
-│   └── semantic-patterns.json
-├── knowledge-base/
-│   ├── _index.json
-│   ├── workflow.md
-│   ├── coding.md
-│   └── writing.md
-└── experience/
-    ├── _index.json
-    └── skill-self-improving-agent.md
+<skill-dir>/
+└── data/
+    ├── logs/
+    │   ├── LEARNINGS.md
+    │   ├── ERRORS.md
+    │   └── FEATURE_REQUESTS.md
+    ├── memory/
+    │   └── semantic-patterns.json
+    ├── knowledge-base/
+    │   ├── _index.json
+    │   ├── workflow.md
+    │   ├── coding.md
+    │   └── writing.md
+    └── experience/
+        ├── _index.json
+        └── skill-self-improving.md
 ```
+
+Optional project-local buffers can be initialized under `<project>/.self-improving/` when project-specific raw logs should not enter the skill-local global store.
 
 ## Quick Reference
 
 | Situation | Action | Ask first? |
 |---|---|---:|
-| Command/tool failed unexpectedly | Append an `ERR-*` entry to `.self-improving/logs/ERRORS.md` | No |
-| User corrected the agent | Append an `LRN-*` correction to `.self-improving/logs/LEARNINGS.md` | No |
-| Non-obvious solution was discovered | Append an `LRN-*` insight or best practice to `.self-improving/logs/LEARNINGS.md` | No |
-| User requested missing capability | Append a `FEAT-*` entry to `.self-improving/logs/FEATURE_REQUESTS.md` | No |
-| Same pattern repeats | Update `.self-improving/memory/semantic-patterns.json` with a redacted summary | No |
-| Pattern becomes broadly useful | Promote to `.self-improving/knowledge-base/` or `.self-improving/experience/` | Yes |
+| Command/tool failed unexpectedly | Append an `ERR-*` entry to `data/logs/ERRORS.md` | No |
+| User corrected the agent | Append an `LRN-*` correction to `data/logs/LEARNINGS.md` | No |
+| Non-obvious solution was discovered | Append an `LRN-*` insight or best practice to `data/logs/LEARNINGS.md` | No |
+| User requested missing capability | Append a `FEAT-*` entry to `data/logs/FEATURE_REQUESTS.md` | No |
+| Same pattern repeats | Update `data/memory/semantic-patterns.json` with a redacted summary | No |
+| Pattern becomes broadly useful | Promote to `data/knowledge-base/` or `data/experience/` | Yes |
 | Rule affects future agent behavior | Promote to `CLAUDE.md`, `AGENTS.md`, or Copilot instructions | Yes |
 | Learning becomes reusable procedure | Extract a new skill | Yes |
 | Changes should be shared | Commit or push | Yes |
 
 ## First-Use Initialization
 
-Run the initializer from the workspace root:
+Run the initializer from the skill root:
 
 ```bash
 ./scripts/init-learnings.sh
+./scripts/init-learnings.sh --scope project --root /path/to/project
+./scripts/init-learnings.sh --scope both --root /path/to/project
 ```
 
 PowerShell:
 
 ```powershell
-pwsh -File scripts/init-learnings.ps1 -Root .
+pwsh -File scripts/init-learnings.ps1
+pwsh -File scripts/init-learnings.ps1 -Scope Project -Root .
+pwsh -File scripts/init-learnings.ps1 -Scope Both -Root .
 ```
 
-The initializer creates `.self-improving/` without overwriting existing files.
+The default scope is global and initializes `<skill>/data/` without overwriting existing files. Project scope initializes `<project>/.self-improving/` as an optional local buffer.
 
 ## Logging Rules
 
-### Do log automatically to `.self-improving/logs/`
+### Do log automatically to `data/logs/`
 
 - short summaries of failures and fixes
 - project-specific gotchas discovered through work
@@ -108,7 +115,7 @@ Example: `LRN-20260528-001`.
 
 ## Learning Entry Format
 
-Append to `.self-improving/logs/LEARNINGS.md`:
+Append to `data/logs/LEARNINGS.md`:
 
 ```markdown
 ## [LRN-YYYYMMDD-XXX] category
@@ -141,7 +148,7 @@ Concrete next action or prevention rule.
 
 ## Error Entry Format
 
-Append to `.self-improving/logs/ERRORS.md`:
+Append to `data/logs/ERRORS.md`:
 
 ````markdown
 ## [ERR-YYYYMMDD-XXX] command_or_tool
@@ -177,7 +184,7 @@ Likely fix or next diagnostic step.
 
 ## Feature Request Format
 
-Append to `.self-improving/logs/FEATURE_REQUESTS.md`:
+Append to `data/logs/FEATURE_REQUESTS.md`:
 
 ```markdown
 ## [FEAT-YYYYMMDD-XXX] capability_name
@@ -208,7 +215,7 @@ Potential implementation path.
 
 ## Semantic Pattern Memory
 
-Use `.self-improving/memory/semantic-patterns.json` for reusable patterns that are safe to index as redacted summaries.
+Use `data/memory/semantic-patterns.json` for reusable patterns that are safe to index as redacted summaries.
 
 ```json
 {
@@ -248,8 +255,8 @@ Promotion targets:
 
 | Target | Use for |
 |---|---|
-| `.self-improving/knowledge-base/` | General reusable rules and procedures |
-| `.self-improving/experience/` | Skill-specific gotchas, parameters, and successful procedures |
+| `data/knowledge-base/` | General reusable rules and procedures |
+| `data/experience/` | Skill-specific gotchas, parameters, and successful procedures |
 | `CLAUDE.md` | Project-specific rules and conventions |
 | `AGENTS.md` | Agent workflows, automation, handoffs |
 | `.github/copilot-instructions.md` | Copilot-facing repo guidance |
@@ -264,15 +271,15 @@ Use these layers only after raw entries have been distilled and the user has app
 
 | Layer | Path | Purpose |
 |---|---|---|
-| Raw event log | `.self-improving/logs/*.md` | Corrections, failures, requests, and one-off observations |
-| Pattern index | `.self-improving/memory/semantic-patterns.json` | Machine-readable recurring patterns with confidence/applications |
-| General knowledge | `.self-improving/knowledge-base/` | Promoted reusable rules organized by topic keywords |
-| Skill experience | `.self-improving/experience/` | Skill-specific gotchas, parameters, successful procedures, and caveats |
+| Raw event log | `data/logs/*.md` | Corrections, failures, requests, and one-off observations |
+| Pattern index | `data/memory/semantic-patterns.json` | Machine-readable recurring patterns with confidence/applications |
+| General knowledge | `data/knowledge-base/` | Promoted reusable rules organized by topic keywords |
+| Skill experience | `data/experience/` | Skill-specific gotchas, parameters, successful procedures, and caveats |
 
 ### Reading Policy
 
-- Read `.self-improving/knowledge-base/_index.json` only when the current task clearly matches a topic, the user asks for memory, or you are promoting/reviewing knowledge.
-- Read `.self-improving/experience/_index.json` only when using or improving a specific skill and skill-specific history could affect the result.
+- Read `data/knowledge-base/_index.json` only when the current task clearly matches a topic, the user asks for memory, or you are promoting/reviewing knowledge.
+- Read `data/experience/_index.json` only when using or improving a specific skill and skill-specific history could affect the result.
 - Do not force these reads every turn.
 
 ### Knowledge Entry Format
@@ -289,7 +296,7 @@ Hooks are optional and intentionally low authority.
 
 ### Claude Code / Codex minimal hook
 
-Use `settings/claude-code-hooks.example.json` as a starting point. The recommended default is only `UserPromptSubmit`.
+Use `settings/claude-code-hooks.example.json` as a starting point. Replace `<path-to-skill>` with the absolute installed skill path before enabling the hook. The recommended default is only `UserPromptSubmit`.
 
 ### Optional error reminder
 
@@ -297,11 +304,11 @@ Enable `PostToolUse` only if you are comfortable with the hook inspecting tool o
 
 ## Workflow
 
-1. Initialize `.self-improving/` if missing.
+1. Initialize `data/` if missing.
 2. Work normally.
-3. When a trigger occurs, automatically log a compact raw entry to `.self-improving/logs/`.
-4. If repeated or broadly applicable, automatically update `.self-improving/memory/semantic-patterns.json` with a redacted summary.
-5. Ask before promoting distilled content to `.self-improving/knowledge-base/`, `.self-improving/experience/`, project/user instructions, or a new skill.
+3. When a trigger occurs, automatically log a compact raw entry to the skill-local `data/logs/`. Use project-local `.self-improving/logs/` only when the entry is project-specific and should not enter the global skill store.
+4. If repeated or broadly applicable, automatically update the skill-local `data/memory/semantic-patterns.json` with a redacted summary.
+5. Ask before promoting distilled content to `data/knowledge-base/`, `data/experience/`, project/user instructions, or a new skill.
 6. Mark the original entry `resolved`, `promoted`, `wont_fix`, or `promoted_to_skill`.
 
 ## Skill Extraction
@@ -323,4 +330,4 @@ Then edit `skills/my-new-skill/SKILL.md`, update the source learning status to `
 - Do not persist raw tool input/output by default.
 - Do not auto-append global rules or force this skill into every task.
 - Ask before modifying shared/global settings.
-- Treat raw `.self-improving/logs/` and `.self-improving/memory/` data as local by default; share promoted knowledge or experience only with consent.
+- Treat raw `data/logs/` and `data/memory/` data as skill-local private data by default; share promoted knowledge or experience only with consent.
